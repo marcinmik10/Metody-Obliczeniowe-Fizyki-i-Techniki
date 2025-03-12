@@ -5,7 +5,7 @@
 const double m = 1.0;
 const double l1 = 1.0;
 const double l2 = 1.0 / std::sqrt(8);
-const double dt = 0.01; // krok czasowy
+const double dt = 0.01; //krok czasowy
 const double t_max = 100.0; // maksymalny czas symulacji
 const double dx = 0.001; // dla obliczenia pochodnej siły
 
