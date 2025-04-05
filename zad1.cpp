@@ -2,7 +2,6 @@
 #include <fstream>
 #include <cmath>
 #include <cstring>
-//do sprawdzenia czacior
 const double m = 1.0;
 const double l1 = 1.0;
 const double l2 = 1.0 / std::sqrt(8);
