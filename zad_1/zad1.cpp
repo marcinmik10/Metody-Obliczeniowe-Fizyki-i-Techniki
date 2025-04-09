@@ -21,7 +21,7 @@ double force(double x) {
 // Metoda Eulera
 void euler(std::ofstream &file) {
     double x = 2.8, v = 0.0;
-    double dt=0.001;
+    double dt=0.00001;
     for (double t = 0; t <= t_max; t += dt) {
         double a = force(x) / m;
         x += v * dt;

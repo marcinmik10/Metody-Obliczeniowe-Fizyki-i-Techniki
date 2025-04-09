@@ -8,3 +8,5 @@
 /test
 #exe files
 *.exe
+#txt data files
+*.txt
