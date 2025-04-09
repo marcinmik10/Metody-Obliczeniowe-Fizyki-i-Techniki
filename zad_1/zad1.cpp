@@ -49,7 +49,7 @@ void verlet(std::ofstream &file) {
 // Metoda RK4
 void rk4(std::ofstream &file) {
     double x = 2.8, v = 0.0;
-    double dt = 0.001; //krok czasowy
+    double dt = 0.01; //krok czasowy
     for (double t = 0; t <= t_max; t += dt) {
         double k1_x = v;
         double k1_v = force(x) / m;
