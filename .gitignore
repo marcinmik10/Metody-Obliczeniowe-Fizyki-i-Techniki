@@ -6,3 +6,5 @@
 /build
 #test directory
 /test
+#exe files
+*.exe
