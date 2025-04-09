@@ -68,56 +68,88 @@ void rk4(std::ofstream &file) {
         file << t << " " << x << " " << v << std::endl;
     }
 }
+// void euler_adaptive(std::ofstream &file) {
+//     double x = 2.8, v = 0.0;
+//     double t = 0.0;
+//     double dt = 0.001;
+//     const double tol = 1e-6;
+//     const double c = 0.9;
+//     const int d = 1;
+//     double err=1;
+//     double x_small=1;
+//     double v_small=1;
+//     while (t <= t_max) {
+//         while (err>tol){
+//             // Jeden duży krok (2*dt)
+//             double a = force(x) / m;
+//             double x_big = x + v * 2 * dt;
+//             double v_big = v + a * 2 * dt;
+
+//             // Dwa małe kroki (dt + dt)
+//             double x_half = x + v * dt;
+//             double v_half = v + a * dt;
+//             double a_half = force(x_half) / m;
+
+//             double x_small = x_half + v_half * dt;//wartosci po 2 malych krokach
+//             double v_small = v_half + a_half * dt;
+
+//             // Szacowanie błędu
+//             double err_x = std::abs((x_small - x_big) / (std::pow(2, d) - 1));
+//             double err_v = std::abs((v_small - v_big) / (std::pow(2, d) - 1));
+//             err = std::max(err_x, err_v);
+
+//             // Aktualizacja kroku
+//             dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
+//             if (dt < 1e-8) dt = 1e-8; // ograniczenie minimalnego kroku
+//             if (t + 2 * dt > t_max) dt = (t_max - t) / 2.0; // końcówka symulacji
+//         }
+//         // Krok zaakceptowany
+//         x = x_small;
+//         v = v_small;
+//         t += 2 * dt;
+//         file << t << " " << x << " " << v << std::endl;}}
 void euler_adaptive(std::ofstream &file) {
     double x = 2.8, v = 0.0;
     double t = 0.0;
-    double dt = 0.001;
+    double dt = 0.0001;
     const double tol = 1e-6;
     const double c = 0.9;
     const int d = 1;
 
     while (t <= t_max) {
-        do while (1){
-        
-            
-            // Jeden duży krok (2*dt)
-            double a = force(x) / m;
-            double x_big = x + v * 2 * dt;
-            double v_big = v + a * 2 * dt;
+        // Jeden duży krok (2*dt)
+        double a = force(x) / m;
+        double x_big = x + v * 2 * dt;
+        double v_big = v + a * 2 * dt;
 
-            // Dwa małe kroki (dt + dt)
-            double x_half = x + v * dt;
-            double v_half = v + a * dt;
-            double a_half = force(x_half) / m;
+        // Dwa małe kroki (dt + dt)
+        double x_half = x + v * dt;
+        double v_half = v + a * dt;
+        double a_half = force(x_half) / m;
 
-            double x_small = x_half + v_half * dt;//wartosci po 2 malych krokach
-            double v_small = v_half + a_half * dt;
+        double x_small = x_half + v_half * dt;
+        double v_small = v_half + a_half * dt;
 
-            // Szacowanie błędu
-            double err_x = std::abs((x_small - x_big) / (std::pow(2, d) - 1));
-            double err_v = std::abs((v_small - v_big) / (std::pow(2, d) - 1));
-            double err = std::max(err_x, err_v);
+        // Szacowanie błędu
+        double err_x = std::abs((x_small - x_big) / (std::pow(2, d) - 1));
+        double err_v = std::abs((v_small - v_big) / (std::pow(2, d) - 1));
+        double err = std::max(err_x, err_v);
 
-            if (err <= tol) {
-                // Krok zaakceptowany
-                x = x_small;
-                v = v_small;
-                t += 2 * dt;
-                file << t << " " << x << " " << v << std::endl;
-                break;
-            } 
+        if (err <= tol) {
+            // Krok zaakceptowany
+            x = x_small;
+            v = v_small;
+            t += 2 * dt;
+            file << t << " " << x << " " << v << " " << dt << std::endl;
+        } else {
+            // Za duży błąd – nie przesuwamy t
+          // std::cout << "Za duży błąd (" << err << ") przy t = " << t << ", zmniejszamy dt\n";
         }
-            // else {
-            //     // Za duży błąd – nie przesuwamy t
-            //     //std::cout << "Za duży błąd (" << err << ") przy t = " << t << ", zmniejszamy dt\n";
-            // }
 
-            // Aktualizacja kroku
-            dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
-            if (dt < 1e-8) dt = 1e-8; // ograniczenie minimalnego kroku
-            if (t + 2 * dt > t_max) dt = (t_max - t) / 2.0; // końcówka symulacji
-            
-        
+        // Aktualizacja kroku
+        dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
+        //if (dt < 1e-8) dt = 1e-8; // ograniczenie minimalnego kroku
+        //if (t + 2 * dt > t_max) dt = (t_max - t) / 2.0; // końcówka symulacji
     }
 }
 
@@ -137,6 +169,11 @@ int main(int argc, char ** argv) {
         std::ofstream rk4_file("rk4.txt");
         rk4(rk4_file);
         rk4_file.close();
+    }
+    else if(strcmp(argv[1], "euler_adaptive") == 0) {
+        std::ofstream euler_adaptive_file("euler_adaptive.txt");
+        euler_adaptive(euler_adaptive_file);
+        euler_adaptive_file.close();
     }
     else {
         std::cerr << "Unknown method: " << argv[1] << std::endl;
