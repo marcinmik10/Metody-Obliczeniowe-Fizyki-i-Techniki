@@ -154,6 +154,97 @@ void euler(std::ofstream &file) {
     }
 }
 
+void euler_damped(std::ofstream &file, double alpha) {
+    double x = 2.8, v = 0.0, t = 0.0;
+    double dt = 0.0001;
+    const double tol = 1e-6, c = 0.9;
+    const int d = 1;
+
+    while (t <= t_max) {
+        // a = -dφ/dx / m - αv
+        double a = force(x) / m - alpha * v;
+
+        // Duży krok (2*dt)
+        double x_big = x + v * 2 * dt;
+        double v_big = v + a * 2 * dt;
+
+        // Dwa małe kroki
+        double x_half = x + v * dt;
+        double v_half = v + a * dt;
+        double a_half = force(x_half) / m - alpha * v_half;
+        double x_small = x_half + v_half * dt;
+        double v_small = v_half + a_half * dt;
+
+        double err_x = std::abs((x_small - x_big) / (std::pow(2, d) - 1));
+        double err_v = std::abs((v_small - v_big) / (std::pow(2, d) - 1));
+        double err = std::max(err_x, err_v);
+
+        if (err <= tol) {
+            x = x_small;
+            v = v_small;
+            t += 2 * dt;
+            file << t << " " << x << " " << v << " " << dt << std::endl;
+        }
+
+        dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
+        if (dt < 1e-8) dt = 1e-8; // ograniczenie minimalnego kroku
+        // if (t + 2 * dt > t_max) dt = (t_max - t) / 2.0;
+    }
+}
+
+void rk4_damped(std::ofstream &file, double alpha) {
+    double x = 2.8, v = 0.0, t = 0.0;
+    double dt = 0.01;
+    const double tol = 1e-6, c = 0.9;
+    const int d = 4;
+
+    while (t <= t_max) {
+        auto acceleration = [&](double x, double v) {
+            return force(x) / m - alpha * v;
+        };
+
+        // Duży krok (2*dt)
+        double k1x = v;
+        double k1v = acceleration(x, v);
+        double k2x = v + dt * k1v;
+        double k2v = acceleration(x + dt * k1x, v + dt * k1v);
+        double x_big = x + dt * (k1x + k2x) / 2.0;
+        double v_big = v + dt * (k1v + k2v) / 2.0;
+
+        // Dwa małe kroki
+        double x1 = x, v1 = v;
+        for (int i = 0; i < 2; ++i) {
+            double k1x = v1;
+            double k1v = acceleration(x1, v1);
+            double k2x = v1 + 0.5 * dt * k1v;
+            double k2v = acceleration(x1 + 0.5 * dt * k1x, v1 + 0.5 * dt * k1v);
+            double k3x = v1 + 0.5 * dt * k2v;
+            double k3v = acceleration(x1 + 0.5 * dt * k2x, v1 + 0.5 * dt * k2v);
+            double k4x = v1 + dt * k3v;
+            double k4v = acceleration(x1 + dt * k3x, v1 + dt * k3v);
+
+            x1 += dt / 6.0 * (k1x + 2*k2x + 2*k3x + k4x);
+            v1 += dt / 6.0 * (k1v + 2*k2v + 2*k3v + k4v);
+        }
+
+        double err_x = std::abs((x1 - x_big) / (std::pow(2, d) - 1));
+        double err_v = std::abs((v1 - v_big) / (std::pow(2, d) - 1));
+        double err = std::max(err_x, err_v);
+
+        if (err <= tol) {
+            x = x1;
+            v = v1;
+            t += 2 * dt;
+            file << t << " " << x << " " << v << " " << dt << std::endl;
+        }
+
+        dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
+        if (dt < 1e-8) dt = 1e-8; // ograniczenie minimalnego kroku
+        // if (t + 2 * dt > t_max) dt = (t_max - t) / 2.0;
+    }
+}
+
+
 
 int main(int argc, char ** argv) {
     if(strcmp(argv[1], "euler") == 0) {
@@ -171,6 +262,16 @@ int main(int argc, char ** argv) {
         rk4(rk4_file);
         rk4_file.close();
     }
+    else if(strcmp(argv[1], "euler_damped") == 0) {
+        std::ofstream file("euler_damped.txt");
+        euler_damped(file, 0.5); // lub 5.0
+        file.close();
+    }
+    else if(strcmp(argv[1], "rk4_damped") == 0) {
+        std::ofstream file("rk4_damped.txt");
+        rk4_damped(file, 0.5); // lub 0.5
+        file.close();
+    }    
     else {
         std::cerr << "Unknown method: " << argv[1] << std::endl;
         return 0;
