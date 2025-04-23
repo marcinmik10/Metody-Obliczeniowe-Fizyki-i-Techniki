@@ -187,7 +187,7 @@ void euler_damped(std::ofstream &file, double alpha) {
         }
 
         dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
-        if (dt < 1e-8) dt = 1e-8; // ograniczenie minimalnego kroku
+        // if (dt < 1e-8) dt = 1e-8; // ograniczenie minimalnego kroku
         // if (t + 2 * dt > t_max) dt = (t_max - t) / 2.0;
     }
 }
@@ -239,10 +239,51 @@ void rk4_damped(std::ofstream &file, double alpha) {
         }
 
         dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
-        if (dt < 1e-8) dt = 1e-8; // ograniczenie minimalnego kroku
+        // if (dt < 1e-8) dt = 1e-8; // ograniczenie minimalnego kroku
         // if (t + 2 * dt > t_max) dt = (t_max - t) / 2.0;
     }
 }
+
+// void verlet_damped(std::ofstream &file, double alpha) {
+//     double x = 2.8, v = 0.0, t = 0.0;
+//     double dt = 0.001;
+//     const double tol = 1e-7, c = 0.9;
+//     const int d = 2;
+
+//     while (t <= t_max) {
+//         double a = force(x) / m - alpha * v;
+
+//         // Duży krok (2dt)
+//         double x_big = x + v * 2*dt + 0.5 * a * 4*dt*dt;
+//         double a_big = force(x_big) / m - alpha * (v + a * 2 * dt); // szacujemy v po 2dt
+//         double v_big = v + 0.5 * (a + a_big) * 2*dt;
+
+//         // Dwa małe kroki (dt + dt)
+//         double x_half = x + v * dt + 0.5 * a * dt * dt;
+//         double v_half = v + 0.5 * a * dt;
+//         double a_half = force(x_half) / m - alpha * v_half;
+
+//         double x_small = x_half + v_half * dt + 0.5 * a_half * dt * dt;
+//         double v_small = v_half + 0.5 * a_half * dt;
+//         double a_small = force(x_small) / m - alpha * v_small;
+
+//         double err_x = std::abs((x_small - x_big) / (std::pow(2, d) - 1));
+//         double err_v = std::abs((v_small - v_big) / (std::pow(2, d) - 1));
+//         double err = std::max(err_x, err_v);
+
+//         if (err <= tol) {
+//             x = x_small;
+//             v = v_small;
+//             t += 2 * dt;
+//             file << t << " " << x << " " << v << " " << dt << std::endl;
+//         }
+
+//         dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
+//         // if (dt < 1e-8) dt = 1e-8;
+//         // if (t + 2 * dt > t_max) dt = (t_max - t) / 2.0;
+//     }
+// }
+
 
 
 
@@ -269,10 +310,10 @@ int main(int argc, char ** argv) {
     }
     else if(strcmp(argv[1], "rk4_damped") == 0) {
         std::ofstream file("rk4_damped.txt");
-        rk4_damped(file, 0.5); // lub 0.5
+        rk4_damped(file, 0.5); 
         file.close();
     }    
-    else {
+    else{
         std::cerr << "Unknown method: " << argv[1] << std::endl;
         return 0;
     }
