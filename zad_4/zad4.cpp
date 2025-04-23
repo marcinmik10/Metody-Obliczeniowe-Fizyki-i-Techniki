@@ -244,48 +244,67 @@ void rk4_damped(std::ofstream &file, double alpha) {
     }
 }
 void trapezoidal(std::ofstream &file, double alpha) {
-    double x = 2.8, v = 0.0;
+    double x = 2.8, v = 0.0, t = 0.0;
     double dt = 0.01;
-    const double eps = 1e-10;
+    const double tol = 1e-6, c = 0.9;
+    const int d = 2;
     const int max_iter = 20;
 
-    for (double t = 0.0; t <= t_max; t += dt) {
-        double x0 = x, v0 = v;
-        double x1 = x0, v1 = v0;
+    while (t <= t_max) {
+        // Jedno duże przejście (2dt)
+        auto step = [&](double x0, double v0, double dt_step) {
+            double x1 = x0;
+            double v1 = v0;
 
-        for (int iter = 0; iter < max_iter; ++iter) {
-            // Oblicz siły i pochodne
-            double f_x1 = force(x1);
-            double f_x0 = force(x0);
-            double d2phi = (potential(x1 + eps) - 2 * potential(x1) + potential(x1 - eps)) / (eps * eps);
+            for (int iter = 0; iter < max_iter; ++iter) {
+                double F1 = x1 - x0 - 0.5 * dt_step * (v1 + v0);
+                double F2 = v1 - v0 - 0.5 * dt_step * ((force(x1) / m - alpha * v1) + (force(x0) / m - alpha * v0));
 
-            // F1 i F2
-            double F1 = x1 - x0 - 0.5 * dt * (v1 + v0);
-            double F2 = v1 - v0 - 0.5 * dt * (
-                (-f_x1 / m - alpha * v1) + (-f_x0 / m - alpha * v0));
+                // Przybliżenie drugiej pochodnej potencjału
+                double d2phi = (potential(x1 + dx) - 2 * potential(x1) + potential(x1 - dx)) / (dx * dx);
 
-            // Jacobian
-            double dF1_dx1 = 1;
-            double dF1_dv1 = -0.5 * dt;
-            double dF2_dx1 = 0.5 * dt * (1.0 / m) * d2phi;
-            double dF2_dv1 = 1 + 0.5 * dt * alpha;
+                double J11 = 1;
+                double J12 = -0.5 * dt_step;
+                double J21 = -0.5 * dt_step * d2phi / m;
+                double J22 = 1 + 0.5 * dt_step * alpha;
 
-            // Układ równań liniowych: J * Δ = -F
-            double det = dF1_dx1 * dF2_dv1 - dF1_dv1 * dF2_dx1;
-            double dx = (-F1 * dF2_dv1 + F2 * dF1_dv1) / det;
-            double dv = (-F2 * dF1_dx1 + F1 * dF2_dx1) / det;
+                double det = J11 * J22 - J12 * J21;
+                if (std::abs(det) < 1e-12) break;
 
-            x1 += dx;
-            v1 += dv;
+                double dx_corr = (-F1 * J22 + F2 * J12) / det;
+                double dv_corr = (-J11 * F2 + J21 * F1) / det;
 
-            if (std::abs(dx) < 1e-12 && std::abs(dv) < 1e-12) break;
+                x1 += dx_corr;
+                v1 += dv_corr;
+
+                if (std::abs(dx_corr) < 1e-10 && std::abs(dv_corr) < 1e-10) break;
+            }
+
+            return std::make_pair(x1, v1);
+        };
+
+        auto [x_big, v_big] = step(x, v, 2 * dt);
+
+        auto [x_half, v_half] = step(x, v, dt);
+        auto [x_small, v_small] = step(x_half, v_half, dt);
+
+        double err_x = std::abs((x_small - x_big) / (std::pow(2, d) - 1));
+        double err_v = std::abs((v_small - v_big) / (std::pow(2, d) - 1));
+        double err = std::max(err_x, err_v);
+
+        if (err <= tol) {
+            x = x_small;
+            v = v_small;
+            t += 2 * dt;
+            file << t << " " << x << " " << v << " " << dt << std::endl;
         }
 
-        x = x1;
-        v = v1;
-        file << t << " " << x << " " << v << std::endl;
+        dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
+        if (dt < 1e-8) dt = 1e-8;
     }
 }
+
+
 
 int main(int argc, char ** argv) {
     if(strcmp(argv[1], "euler") == 0) {
@@ -314,10 +333,8 @@ int main(int argc, char ** argv) {
         file.close();
     }
     else if(strcmp(argv[1], "trapez") == 0){
-        std::ofstream out1("trapez_alpha_0.5.txt");
-        trapezoidal(out1, 0.5);
-        std::ofstream out2("trapez_alpha_5.txt");
-        trapezoidal(out2, 5.0);
+        std::ofstream file("trapezoidal_alpha05.txt");
+        trapezoidal(file, 0.5);
     }    
     else{
         std::cerr << "Unknown method: " << argv[1] << std::endl;
