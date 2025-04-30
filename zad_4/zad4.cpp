@@ -301,32 +301,33 @@ void trapezoidal(std::ofstream &file, double alpha) {
 
 
 int main(int argc, char ** argv) {
-    if(strcmp(argv[1], "euler") == 0) {
-        std::ofstream euler_adaptive_file("euler_adaptive.txt");
-        euler(euler_adaptive_file);
-        euler_adaptive_file.close();
-    }
-    else if(strcmp(argv[1],"verlet")==0){
-        std::ofstream verlet_file("verlet_adaptive.txt");
-        verlet(verlet_file);
-        verlet_file.close();
-    }
-    else if(strcmp(argv[1],"rk4")==0){
-        std::ofstream rk4_file("rk4_adaptive.txt");
-        rk4(rk4_file);
-        rk4_file.close();
-    }
-    else if(strcmp(argv[1], "euler_damped") == 0) {
-        std::ofstream file("euler_damped.txt");
-        euler_damped(file, 0.5); // lub 5.0
-        file.close();
-    }
-    else if(strcmp(argv[1], "rk4_damped") == 0) {
-        std::ofstream file("rk4_damped.txt");
-        rk4_damped(file, 0.5); 
-        file.close();
-    }
-    else if(strcmp(argv[1], "trapez") == 0){
+    // if(strcmp(argv[1], "euler") == 0) {
+    //     std::ofstream euler_adaptive_file("euler_adaptive.txt");
+    //     euler(euler_adaptive_file);
+    //     euler_adaptive_file.close();
+    // }
+    // else if(strcmp(argv[1],"verlet")==0){
+    //     std::ofstream verlet_file("verlet_adaptive.txt");
+    //     verlet(verlet_file);
+    //     verlet_file.close();
+    // }
+    // else if(strcmp(argv[1],"rk4")==0){
+    //     std::ofstream rk4_file("rk4_adaptive.txt");
+    //     rk4(rk4_file);
+    //     rk4_file.close();
+    // }
+    // else if(strcmp(argv[1], "euler_damped") == 0) {
+    //     std::ofstream file("euler_damped.txt");
+    //     euler_damped(file, 0.5); // lub 5.0
+    //     file.close();
+    // }
+    // else if(strcmp(argv[1], "rk4_damped") == 0) {
+    //     std::ofstream file("rk4_damped.txt");
+    //     rk4_damped(file, 0.5); 
+    //     file.close();
+    // }
+    // else 
+    if(strcmp(argv[1], "trapez") == 0){
         std::ofstream file("trapezoidal_alpha05.txt");
         trapezoidal(file, 0.5);
     }    
