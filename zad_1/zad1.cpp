@@ -26,7 +26,7 @@ void euler(std::ofstream &file) {
         double a = force(x) / m;
         x += v * dt;
         v += a * dt;
-        file << t << " " << x << " " << v << std::endl;
+        file << t << " " << x << " " << v <<" "<<m*v*v/2+potential(x)<< std::endl;
     }
 }
 
@@ -42,7 +42,7 @@ void verlet(std::ofstream &file) {
         x = x_new;
         v = v_new;
         a = a_new;
-        file << t << " " << x << " " << v << std::endl;
+        file << t << " " << x << " " << v <<" "<<m*v*v/2+potential(x)<< std::endl;
     }
 }
 
@@ -65,7 +65,7 @@ void rk4(std::ofstream &file) {
 
         x += dt / 6.0 * (k1_x + 2 * k2_x + 2 * k3_x + k4_x);
         v += dt / 6.0 * (k1_v + 2 * k2_v + 2 * k3_v + k4_v);
-        file << t << " " << x << " " << v << std::endl;
+        file << t << " " << x << " " << v << " "<<m*v*v/2+potential(x)<< std::endl;
     }
 }
 

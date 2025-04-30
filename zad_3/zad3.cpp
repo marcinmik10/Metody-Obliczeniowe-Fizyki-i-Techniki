@@ -8,12 +8,10 @@ const double l2 = 1.0 / std::sqrt(8);
 const double t_max = 100.0; // maksymalny czas symulacji
 const double dx = 0.001; // dla obliczenia pochodnej siły
 
-// Funkcja potencjału
 double potential(double x) {
     return -std::exp(-x*x / (l1*l1)) - 8 * std::exp(-std::pow(x - 2, 2) / (l2*l2));
 }
 
-// Obliczanie siły jako -dφ/dx
 double force(double x) {
     return -(potential(x + dx) - potential(x - dx)) / (2 * dx);
 }
@@ -50,12 +48,13 @@ void verlet(std::ofstream &file) {
             x = x_small;
             v = v_small;
             t += 2 * dt;
-            file << t << " " << x << " " << v << " " << dt << std::endl;
+            file << t << " " << x << " " << v <<" "<<m*v*v/2+potential(x)<< std::endl;
+
         }
 
         dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
         if (dt < 1e-8) dt = 1e-8;
-        // if (t + 2 * dt > t_max) dt = (t_max - t) / 2.0;
+        // 
     }
 }
 
@@ -99,12 +98,13 @@ void rk4(std::ofstream &file) {
             x = x_small;
             v = v_small;
             t += 2 * dt;
-            file << t << " " << x << " " << v << " " << dt << std::endl;
+            file << t << " " << x << " " << v <<" "<<m*v*v/2+potential(x)<< std::endl;
+
         }
 
         dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
         if (dt < 1e-8) dt = 1e-8;
-        // if (t + 2 * dt > t_max) dt = (t_max - t) / 2.0;
+        // 
     }
 }
 
@@ -137,20 +137,18 @@ void euler(std::ofstream &file) {
         double err = std::max(err_x, err_v);
 
         if (err <= tol) {
-            // Krok zaakceptowany
             x = x_small;
             v = v_small;
             t += 2 * dt;
-            file << t << " " << x << " " << v << " " << dt << std::endl;
+            file << t << " " << x << " " << v <<" "<<m*v*v/2+potential(x)<< std::endl;
+
         } else {
             // Za duży błąd – nie przesuwamy t
           // std::cout << "Za duży błąd (" << err << ") przy t = " << t << ", zmniejszamy dt\n";
         }
 
-        // Aktualizacja kroku
         dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
         if (dt < 1e-8) dt = 1e-8; // ograniczenie minimalnego kroku
-        //if (t + 2 * dt > t_max) dt = (t_max - t) / 2.0; // końcówka symulacji
     }
 }
 
@@ -161,7 +159,6 @@ void euler_damped(std::ofstream &file, double alpha) {
     const int d = 1;
 
     while (t <= t_max) {
-        // a = -dφ/dx / m - αv
         double a = force(x) / m - alpha * v;
 
         // Duży krok (2*dt)
@@ -183,12 +180,13 @@ void euler_damped(std::ofstream &file, double alpha) {
             x = x_small;
             v = v_small;
             t += 2 * dt;
-            file << t << " " << x << " " << v << " " << dt << std::endl;
+            file << t << " " << x << " " << v <<" "<<m*v*v/2+potential(x)<< std::endl;
+
         }
 
         dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
         // if (dt < 1e-8) dt = 1e-8; // ograniczenie minimalnego kroku
-        // if (t + 2 * dt > t_max) dt = (t_max - t) / 2.0;
+        // 
     }
 }
 
@@ -235,54 +233,15 @@ void rk4_damped(std::ofstream &file, double alpha) {
             x = x1;
             v = v1;
             t += 2 * dt;
-            file << t << " " << x << " " << v << " " << dt << std::endl;
+            file << t << " " << x << " " << v <<" "<<m*v*v/2+potential(x)<< std::endl;
+
         }
 
         dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
         // if (dt < 1e-8) dt = 1e-8; // ograniczenie minimalnego kroku
-        // if (t + 2 * dt > t_max) dt = (t_max - t) / 2.0;
     }
 }
 
-// void verlet_damped(std::ofstream &file, double alpha) {
-//     double x = 2.8, v = 0.0, t = 0.0;
-//     double dt = 0.001;
-//     const double tol = 1e-7, c = 0.9;
-//     const int d = 2;
-
-//     while (t <= t_max) {
-//         double a = force(x) / m - alpha * v;
-
-//         // Duży krok (2dt)
-//         double x_big = x + v * 2*dt + 0.5 * a * 4*dt*dt;
-//         double a_big = force(x_big) / m - alpha * (v + a * 2 * dt); // szacujemy v po 2dt
-//         double v_big = v + 0.5 * (a + a_big) * 2*dt;
-
-//         // Dwa małe kroki (dt + dt)
-//         double x_half = x + v * dt + 0.5 * a * dt * dt;
-//         double v_half = v + 0.5 * a * dt;
-//         double a_half = force(x_half) / m - alpha * v_half;
-
-//         double x_small = x_half + v_half * dt + 0.5 * a_half * dt * dt;
-//         double v_small = v_half + 0.5 * a_half * dt;
-//         double a_small = force(x_small) / m - alpha * v_small;
-
-//         double err_x = std::abs((x_small - x_big) / (std::pow(2, d) - 1));
-//         double err_v = std::abs((v_small - v_big) / (std::pow(2, d) - 1));
-//         double err = std::max(err_x, err_v);
-
-//         if (err <= tol) {
-//             x = x_small;
-//             v = v_small;
-//             t += 2 * dt;
-//             file << t << " " << x << " " << v << " " << dt << std::endl;
-//         }
-
-//         dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
-//         // if (dt < 1e-8) dt = 1e-8;
-//         // if (t + 2 * dt > t_max) dt = (t_max - t) / 2.0;
-//     }
-// }
 
 
 

@@ -5,15 +5,13 @@
 const double m = 1.0;
 const double l1 = 1.0;
 const double l2 = 1.0 / std::sqrt(8);
-const double t_max = 100.0; // maksymalny czas symulacji
-const double dx = 0.001; // dla obliczenia pochodnej siły
+const double t_max = 100.0; 
+const double dx = 0.001; 
 
-// Funkcja potencjału
 double potential(double x) {
     return -std::exp(-x*x / (l1*l1)) - 8 * std::exp(-std::pow(x - 2, 2) / (l2*l2));
 }
 
-// Obliczanie siły jako -dφ/dx
 double force(double x) {
     return -(potential(x + dx) - potential(x - dx)) / (2 * dx);
 }
@@ -50,12 +48,12 @@ void verlet(std::ofstream &file) {
             x = x_small;
             v = v_small;
             t += 2 * dt;
-            file << t << " " << x << " " << v << " " << dt << std::endl;
+            file << t << " " << x << " " << v <<" "<<m*v*v/2+potential(x)<< std::endl;
+
         }
 
         dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
         if (dt < 1e-8) dt = 1e-8;
-        // if (t + 2 * dt > t_max) dt = (t_max - t) / 2.0;
     }
 }
 
@@ -99,12 +97,12 @@ void rk4(std::ofstream &file) {
             x = x_small;
             v = v_small;
             t += 2 * dt;
-            file << t << " " << x << " " << v << " " << dt << std::endl;
+            file << t << " " << x << " " << v <<" "<<m*v*v/2+potential(x)<< std::endl;
+
         }
 
         dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
         if (dt < 1e-8) dt = 1e-8;
-        // if (t + 2 * dt > t_max) dt = (t_max - t) / 2.0;
     }
 }
 
@@ -131,26 +129,22 @@ void euler(std::ofstream &file) {
         double x_small = x_half + v_half * dt;
         double v_small = v_half + a_half * dt;
 
-        // Szacowanie błędu
         double err_x = std::abs((x_small - x_big) / (std::pow(2, d) - 1));
         double err_v = std::abs((v_small - v_big) / (std::pow(2, d) - 1));
         double err = std::max(err_x, err_v);
 
         if (err <= tol) {
-            // Krok zaakceptowany
             x = x_small;
             v = v_small;
             t += 2 * dt;
-            file << t << " " << x << " " << v << " " << dt << std::endl;
+            file << t << " " << x << " " << v <<" "<<m*v*v/2+potential(x)<< std::endl;
+
         } else {
             // Za duży błąd – nie przesuwamy t
-          // std::cout << "Za duży błąd (" << err << ") przy t = " << t << ", zmniejszamy dt\n";
         }
 
-        // Aktualizacja kroku
         dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
         if (dt < 1e-8) dt = 1e-8; // ograniczenie minimalnego kroku
-        //if (t + 2 * dt > t_max) dt = (t_max - t) / 2.0; // końcówka symulacji
     }
 }
 
@@ -161,7 +155,6 @@ void euler_damped(std::ofstream &file, double alpha) {
     const int d = 1;
 
     while (t <= t_max) {
-        // a = -dφ/dx / m - αv
         double a = force(x) / m - alpha * v;
 
         // Duży krok (2*dt)
@@ -183,12 +176,12 @@ void euler_damped(std::ofstream &file, double alpha) {
             x = x_small;
             v = v_small;
             t += 2 * dt;
-            file << t << " " << x << " " << v << " " << dt << std::endl;
+            file << t << " " << x << " " << v <<" "<<m*v*v/2+potential(x)<< std::endl;
+
         }
 
         dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
         // if (dt < 1e-8) dt = 1e-8; // ograniczenie minimalnego kroku
-        // if (t + 2 * dt > t_max) dt = (t_max - t) / 2.0;
     }
 }
 
@@ -235,12 +228,12 @@ void rk4_damped(std::ofstream &file, double alpha) {
             x = x1;
             v = v1;
             t += 2 * dt;
-            file << t << " " << x << " " << v << " " << dt << std::endl;
+            file << t << " " << x << " " << v <<" "<<m*v*v/2+potential(x)<< std::endl;
+
         }
 
         dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
         // if (dt < 1e-8) dt = 1e-8; // ograniczenie minimalnego kroku
-        // if (t + 2 * dt > t_max) dt = (t_max - t) / 2.0;
     }
 }
 void trapezoidal(std::ofstream &file, double alpha) {
@@ -296,7 +289,8 @@ void trapezoidal(std::ofstream &file, double alpha) {
             x = x_small;
             v = v_small;
             t += 2 * dt;
-            file << t << " " << x << " " << v << " " << dt << std::endl;
+            file << t << " " << x << " " << v <<" "<<m*v*v/2+potential(x)<< std::endl;
+
         }
 
         dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));

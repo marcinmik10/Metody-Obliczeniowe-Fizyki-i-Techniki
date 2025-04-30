@@ -50,7 +50,8 @@ void verlet(std::ofstream &file) {
             x = x_small;
             v = v_small;
             t += 2 * dt;
-            file << t << " " << x << " " << v << " " << dt << std::endl;
+            file << t << " " << x << " " << v <<" "<<m*v*v/2+potential(x)<< std::endl;
+
         }
 
         dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
@@ -99,7 +100,8 @@ void rk4(std::ofstream &file) {
             x = x_small;
             v = v_small;
             t += 2 * dt;
-            file << t << " " << x << " " << v << " " << dt << std::endl;
+            file << t << " " << x << " " << v <<" "<<m*v*v/2+potential(x)<< std::endl;
+
         }
 
         dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
@@ -141,16 +143,14 @@ void euler(std::ofstream &file) {
             x = x_small;
             v = v_small;
             t += 2 * dt;
-            file << t << " " << x << " " << v << " " << dt << std::endl;
+            file << t << " " << x << " " << v <<" "<<m*v*v/2+potential(x)<< std::endl;
+
         } else {
             // Za duży błąd – nie przesuwamy t
-          // std::cout << "Za duży błąd (" << err << ") przy t = " << t << ", zmniejszamy dt\n";
         }
 
-        // Aktualizacja kroku
         dt = c * dt * std::pow(tol / err, 1.0 / (d + 1));
         if (dt < 1e-8) dt = 1e-8; // ograniczenie minimalnego kroku
-        //if (t + 2 * dt > t_max) dt = (t_max - t) / 2.0; // końcówka symulacji
     }
 }
 
